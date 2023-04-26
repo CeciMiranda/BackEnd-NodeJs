@@ -1,0 +1,16 @@
+{
+  "name": "api01",
+  "version": "1.0.0",
+  "description": "primeiro projeto de webbackend",
+  "main": "index.js",
+  "scripts": {
+    "test": "test"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "mysql": "^2.18.1"
+  }
+}
