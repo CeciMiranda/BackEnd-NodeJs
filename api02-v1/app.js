@@ -4,6 +4,8 @@ const app = express();
 const jwt = require('jsonwebtoken');
 const cors = require('cors');
 const bodyParser = require('body-parser');
+const crypto = require('crypto');
+const senhaToken = "Cecili@2003"
 
 app.use(cors());
 app.use(bodyParser.json());
@@ -50,13 +52,19 @@ app.get('/usuarios/:id', (req, res) => {
 
 
 function gerarToken(payload){
-    const senhaToken = "123"
     return jwt.sign(payload, senhaToken, {expiresIn: 20});
+}
+
+function encriptarSenha(senha){
+    const hash = crypto.createHash('sha256');
+    hash.update(senha + senhaToken);
+    const senhaencriptada = hash.digest('hex');
+    return senhaencriptada
 }
 
 app.post('/login', (req, res) => {
     const LoginNome = req.body.LoginNome;
-    const senha = req.body.senha;
+    const senha = encriptarSenha(req.body.senha);
     connection.query('SELECT NomeUsuario from usuarios where LoginNome = ? AND senha = ? ',[LoginNome, senha], (error, rows) => {
         if(error) {
             console.log('Erro ao processar o comando SQL.', error.message);
@@ -70,6 +78,22 @@ app.post('/login', (req, res) => {
                 res.status(403).json({messageErro: "Login invalido! "})
             }
         }
+    });
+});
+
+
+app.post('/usuarios', (req, res) => {
+    const NomeUsuario = req.body.nomeUsuario;
+    const LoginNome = req.body.LoginNome;
+    const senha = encriptarSenha(req.body.senha);
+    connection.query('INSERT INTO usuarios (NomeUsuario, LoginNome, senha) VALUES (?,?,?)',[NomeUsuario, LoginNome, senha], (error, rows) => {
+        if(error) {
+            console.log('Erro ao processar o comando SQL.', error.message);
+        }
+        else
+             {
+                res.status(403).json({messageErro: "Cadastrado com sucesso!"})
+            }
     });
 });
 
