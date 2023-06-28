@@ -6,6 +6,7 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const crypto = require('crypto');
 const senhaToken = "Cecili@2003"
+const {decode} = require('punycode')
 
 app.use(cors());
 app.use(bodyParser.json());
@@ -27,7 +28,7 @@ connection.connect((err) => {
     }
 });
 
-app.get('/usuarios', (req, res) => {
+app.get('/usuarios', verficarToken, (req, res) => {
     connection.query('SELECT * FROM usuarios', (error, rows) => {
         if (error) {
             console.log('Erro ao processar o comando SQL.', error.message);
@@ -38,7 +39,7 @@ app.get('/usuarios', (req, res) => {
     });
 });
 
-app.get('/usuarios/:id', (req, res) => {
+app.get('/usuarios/:id', verficarToken, (req, res) => {
     const id = req.params['id'];
     connection.query('SELECT `CodUsuario`, `NomeUsuario`, `LoginNome` FROM `usuarios` WHERE CodUsuario = ?', [id], (error, rows) => {
             if (error) {
@@ -56,12 +57,12 @@ function gerarToken(payload){
 }
 
 function verficarToken(req, res, next){
-    const token = req.headers['x-acess-token'];
+    const token = req.headers['x-access-token'];
     if(!token){
         return res.status(401).json({messageErro: 'Usuario não autenticado! Faça login antes de chamar este recurso.'});
 
     } else {
-        jwt.verify(token,senhaToken, (error, decoded) => {
+        jwt.verify(token, senhaToken, (error, decoded) => {
             if(error){
                 return res.status(403).json({messageErro: 'Token inválido. Faça login novamente.'})
             } 
